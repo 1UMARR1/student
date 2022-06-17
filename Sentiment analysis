@@ -1,0 +1,59 @@
+X_train = ['This was awesome an awesome movie',
+           'Great movie! I liked it a lot',
+           'Happy Ending! Awesome acting by the hero',
+           'loved it! truly great',
+           'bad npt upto the mark',
+           'could have been better',
+           'Surely a disappointing movie']
+
+y_train = [1,1,1,1,0,0,0] # 1 - Positive, 0 - Negative Class
+
+from nltk.tokenize import RegexpTokenizer
+
+from nltk.stem.porter import PorterStemmer
+from nltk.corpus import stopwords
+
+import nltk
+nltk.download('stopwords')
+
+tokenizer = RegexpTokenizer(r'\w+')
+en_stopwords = set(stopwords.words('english'))
+ps = PorterStemmer()
+
+def getCleanedText(text):
+  text = text.lower()
+
+  tokens = tokenizer.tokenize(text)
+  new_tokens = [token for token in tokens if token not in en_stopwords]
+
+  stemmed_tokens = [ps.stem(tokens) for tokens in new_tokens]
+
+  clean_text = ' '.join(stemmed_tokens)
+
+  return clean_text
+  
+  X_test = ['I was happy and I loved the acting in the movie',
+          'The movie I saw was bad']
+          
+          X_clean = [getCleanedText(i) for i in X_train]
+Xt_clean = [getCleanedText(i) for i in X_test]
+
+from sklearn.feature_extraction.text import CountVectorizer
+
+cv = CountVectorizer(ngram_range=(1,2))
+
+X_vec = cv.fit_transform(X_clean).toarray()
+
+print(cv.get_feature_names())
+
+Xt_vect = cv.transform(Xt_clean).toarray()
+
+from sklearn.naive_bayes import MultinomialNB
+
+mn = MultinomialNB()
+
+mn.fit(X_vec, y_train)
+
+y_pred = mn.predict(Xt_vect)
+
+y_pred
